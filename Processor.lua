@@ -8,7 +8,7 @@
 -------------------------------------
 
 local UtilityFolder = script.Parent
-local SignalClass = require(UtilityFolder.Signal)
+local SignalClass = require(UtilityFolder.Signal) -- Path to your signal class
 
 local Processor = {}
 Processor.__index = Processor
@@ -53,13 +53,21 @@ function Processor._completeProcess<_, T, V>(self: Class, Index: T, Value: V)
 		self:_killProcess(Index)
 		return
 	end
-	
-	
+		
 	local Signal = self.Processing[Index]
 	
+	self.Processing[Index] = nil
 	self.Processed[Index] = Value
+	
 	Signal:Fire()
-	self:_killProcess(Index)
+	Signal:Destroy()
+end
+
+
+function Processor._doWork<_, T>(self: Class, Index: T, Work: Work)
+	local Value = Work() -- Can yield
+	
+	self:_completeProcess(Index, Value)
 end
 
 
@@ -93,7 +101,7 @@ function Processor.GetAllProcessed(self: Class)
 end
 
 
-function Processor.StartProcess<_, T>(self: Class, Index: T, Work: Work?)
+function Processor.StartProcess<_, T>(self: Class, Index: T, Work: Work?, DontYield: boolean?)
 	if self:HasIndex(Index) then
 		return
 	end
@@ -101,9 +109,11 @@ function Processor.StartProcess<_, T>(self: Class, Index: T, Work: Work?)
 	self.Processing[Index] = Signal	
 	
 	if Work then -- Otherwise youd have to manually call CompleteProcess, which in some cases is better than wrapping all your code inside the work function
-		local Value = Work() -- Can yield
-
-		self:_completeProcess(Index, Value)
+		if DontYield then
+			task.spawn(self._doWork, self, Index, Work)
+		else
+			self:_doWork(Index, Work)
+		end
 	end
 end
 
@@ -118,25 +128,34 @@ function Processor.CancelProcess<_, T>(self: Class, Index: T)
 end
 
 
-function Processor.WaitForProcess<_, T>(self: Class, Index: T)
+function Processor.WaitForProcess<_, T>(self: Class, Index: T): boolean
+	if not self:HasIndex(Index) then
+		return false
+	end
 	if not self:HasIndexProcessing(Index) then
-		return
+		return true
 	end
 	
 	self.Processing[Index]:Wait()
+	
+	return true
 end
 
 
-function Processor.CallbackForProcess<_, T>(self: Class, Index: T, Callback: Callback)
+function Processor.CallbackForProcess<_, T>(self: Class, Index: T, Callback: Callback): boolean
+	if not self:HasIndex(Index) then
+		return false
+	end
 	if not self:HasIndexProcessing(Index) then
 		Callback(self:GetValue(Index))
-		return
+		return true
 	end
 
 	self.Processing[Index]:Once(function()
 		Callback(self:GetValue(Index))
-		return
 	end)
+	
+	return true
 end
 
 -------------------------------------
