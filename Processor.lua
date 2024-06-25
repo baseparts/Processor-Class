@@ -82,6 +82,16 @@ function Processor.GetValue<_, T>(self: Class, Index: T): any
 end
 
 
+function Processor.GetAllProcessing(self: Class)
+	return self.Processing
+end
+
+
+function Processor.GetAllProcessed(self: Class)
+	return self.Processed
+end
+
+
 function Processor.StartProcess<_, T>(self: Class, Index: T, Work: Work?)
 	if self:HasIndex(Index) then
 		return
