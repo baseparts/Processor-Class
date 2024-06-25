@@ -15,7 +15,7 @@ Processor.__index = Processor
 
 -------------------------------------
 
-type Process = () -> (any)
+type Work = () -> (any)
 type Callback = (any) -> () 
 
 type self = {
@@ -82,15 +82,15 @@ function Processor.GetValue<_, T>(self: Class, Index: T): any
 end
 
 
-function Processor.StartProcess<_, T>(self: Class, Index: T, Process: Process?)
+function Processor.StartProcess<_, T>(self: Class, Index: T, Work: Work?)
 	if self:HasIndex(Index) then
 		return
 	end
 	local Signal = SignalClass.new()	
 	self.Processing[Index] = Signal	
 	
-	if Process then -- Otherwise youd have to manually call CompleteProcess
-		local Value = Process() -- Can yield
+	if Work then -- Otherwise youd have to manually call CompleteProcess
+		local Value = Work() -- Can yield
 
 		if (Value == nil) then -- The process returned nil, so kill it
 			self:_killProcess(Index)
