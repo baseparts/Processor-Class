@@ -3,12 +3,12 @@
 
 -- "Processor" class written by @baseparts
 -- For values that will be cached after processing
--- The idea is very similar to Promises
+-- The idea is very similar to Promises (I think)
 
 -------------------------------------
 
 local UtilityFolder = script.Parent
-local SignalClass = require(UtilityFolder.Signal)
+local SignalClass = require(UtilityFolder.Signal) -- Hook up to your signal class. I suggest stravant's GoodSignal
 
 local Processor = {}
 Processor.__index = Processor
