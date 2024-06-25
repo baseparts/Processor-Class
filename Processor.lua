@@ -89,7 +89,7 @@ function Processor.StartProcess<_, T>(self: Class, Index: T, Work: Work?)
 	local Signal = SignalClass.new()	
 	self.Processing[Index] = Signal	
 	
-	if Work then -- Otherwise youd have to manually call CompleteProcess, which in some cases is better than wrapping all your code inside the a work function
+	if Work then -- Otherwise youd have to manually call CompleteProcess, which in some cases is better than wrapping all your code inside the work function
 		local Value = Work() -- Can yield
 
 		if (Value == nil) then -- The work returned nil, so kill the process
