@@ -51,6 +51,7 @@ function Processor._completeProcess<_, T, V>(self: Class, Index: T, Value: V)
 		return
 	elseif Value == nil then
 		self:_killProcess(Index)
+		return
 	end
 	
 	
@@ -101,13 +102,6 @@ function Processor.StartProcess<_, T>(self: Class, Index: T, Work: Work?)
 	
 	if Work then -- Otherwise youd have to manually call CompleteProcess, which in some cases is better than wrapping all your code inside the work function
 		local Value = Work() -- Can yield
-
-		if (Value == nil) then -- The work returned nil, so kill the process
-			self:_killProcess(Index)
-			return
-		elseif (not self:HasIndexProcessing(Index)) then -- Process was killed from elsewhere
-			return
-		end
 
 		self:_completeProcess(Index, Value)
 	end
