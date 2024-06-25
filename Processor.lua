@@ -3,12 +3,12 @@
 
 -- "Processor" class written by @baseparts
 -- For values that will be cached after processing
--- The idea is very similar to Promises (I think)
+-- The idea is very similar to Promises
 
 -------------------------------------
 
 local UtilityFolder = script.Parent
-local SignalClass = require(UtilityFolder.Signal) -- Hook up to your signal class. I suggest stravant's GoodSignal
+local SignalClass = require(UtilityFolder.Signal)
 
 local Processor = {}
 Processor.__index = Processor
@@ -46,6 +46,22 @@ function Processor._killProcess<_, T>(self: Class, Index: T)
 end
 
 
+function Processor._completeProcess<_, T, V>(self: Class, Index: T, Value: V)
+	if not self:HasIndexProcessing(Index) then
+		return
+	elseif Value == nil then
+		self:_killProcess(Index)
+	end
+	
+	
+	local Signal = self.Processing[Index]
+	
+	self.Processed[Index] = Value
+	Signal:Fire()
+	self:_killProcess(Index)
+end
+
+
 function Processor.HasIndexProcessing<_, T>(self: Class, Index: T): boolean
 	return self.Processing[Index] ~= nil
 end
@@ -66,25 +82,30 @@ function Processor.GetValue<_, T>(self: Class, Index: T): any
 end
 
 
-function Processor.StartProcess<_, T>(self: Class, Index: T, Process: Process)
+function Processor.StartProcess<_, T>(self: Class, Index: T, Process: Process?)
 	if self:HasIndex(Index) then
 		return
 	end
 	local Signal = SignalClass.new()	
 	self.Processing[Index] = Signal	
 	
-	local Value = Process() -- Can yield
-	
-	if (Value == nil) then -- The process returned nil, so kill it
-		self:_killProcess(Index)
-		return
-	elseif (not self:HasIndexProcessing(Index)) then -- Process was killed from elsewhere
-		return
+	if Process then -- Otherwise youd have to manually call CompleteProcess
+		local Value = Process() -- Can yield
+
+		if (Value == nil) then -- The process returned nil, so kill it
+			self:_killProcess(Index)
+			return
+		elseif (not self:HasIndexProcessing(Index)) then -- Process was killed from elsewhere
+			return
+		end
+
+		self:_completeProcess(Index, Value)
 	end
-	
-	self.Processed[Index] = Value
-	Signal:Fire()
-	self:_killProcess(Index)
+end
+
+
+function Processor.CompleteProcess<_, T, V>(self: Class, Index: T, Value: V)
+	self:_completeProcess(Index, Value)
 end
 
 
