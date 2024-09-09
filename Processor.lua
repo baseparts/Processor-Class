@@ -2,7 +2,7 @@
 --!strict
 
 -- "Processor" class written by @baseparts
--- For values that will be cached after processing
+-- For values that are being processed and will be cached when completed
 
 -------------------------------------
 
