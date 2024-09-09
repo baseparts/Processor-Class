@@ -4,7 +4,7 @@
 
 Here is example code of how can it can be used (this does not go over everything, just what is important):
 
-```
+```lua
 --------
 -- Lets process a key with a work argument
 
