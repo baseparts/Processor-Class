@@ -3,7 +3,6 @@
 
 -- "Processor" class written by @baseparts
 -- For values that will be cached after processing
--- The idea is very similar to Promises
 
 -------------------------------------
 
